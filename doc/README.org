@@ -164,7 +164,7 @@
     
   #+END_SRC
 
-  Vous pouvez, bien sûr, ciblé un coeur en particulier en spécifiant sont identifiant à la place de */all/*. Par exemple, la commande
+  Vous pouvez, bien sûr, ciblé un coeur en particulier en spécifiant son identifiant à la place de */all/*. Par exemple, la commande
   suivante permet de modifier le */governor/* du coeur *n °2* indépendamment des autres coeurs:
 
   #+BEGIN_SRC bash
