@@ -20,22 +20,22 @@ typedef struct particle_s {
 //generate initial positions and velocities
 void init(particle_t *p, u64 n)
 {
-  for (u64 i = 0; i < n; i++)
+    for (u64 i = 0; i < n; i++)
     {
-      //
-      u64 r1 = (u64)rand();
-      u64 r2 = (u64)rand();
-      f32 sign = (r1 > r2) ? 1 : -1;
+        //
+        u64 r1 = (u64)rand();
+        u64 r2 = (u64)rand();
+        f32 sign = (r1 > r2) ? 1 : -1;
       
-      //
-      p[i].x = sign * (f32)rand() / (f32)RAND_MAX;
-      p[i].y = (f32)rand() / (f32)RAND_MAX;
-      p[i].z = sign * (f32)rand() / (f32)RAND_MAX;
+        //
+        p[i].x = sign * (f32)rand() / (f32)RAND_MAX;
+        p[i].y = (f32)rand() / (f32)RAND_MAX;
+        p[i].z = sign * (f32)rand() / (f32)RAND_MAX;
 
-      //
-      p[i].vx = (f32)rand() / (f32)RAND_MAX;
-      p[i].vy = sign * (f32)rand() / (f32)RAND_MAX;
-      p[i].vz = (f32)rand() / (f32)RAND_MAX;
+        //
+        p[i].vx = (f32)rand() / (f32)RAND_MAX;
+        p[i].vy = sign * (f32)rand() / (f32)RAND_MAX;
+        p[i].vz = (f32)rand() / (f32)RAND_MAX;
     }
 }
 
@@ -64,8 +64,8 @@ void move_particles(particle_t *p, const f32 dt, u64 n)
 	  //Compute the distance between particle i and j: 6 FLOPs
 	  const f32 d_2 = (dx * dx) + (dy * dy) + (dz * dz) + softening; //9 (mul, add)
 
-	  //2 FLOPs (here, we consider pow to be 1 operation)
-	  const f32 d_3_over_2 = pow(d_2, 3.0 / 2.0); //11 (pow, div)
+	  //2 FLOPs ***replace pow(d_2, 3.0 / 2.0)***
+	  const f32 d_3_over_2 = d_2 * sqrt(d_2); //11 (mul, sqrt)
 	  
 	  //Calculate net force: 6 FLOPs
 	  fx += dx / d_3_over_2; //13 (add, div)
