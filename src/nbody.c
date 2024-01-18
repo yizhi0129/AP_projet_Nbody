@@ -112,6 +112,23 @@ int main(int argc, char **argv)
   //
   init(p, n);
 
+  //write initial conditions as reference
+  FILE *init = fopen("../ref/init.txt", "w");
+  if (init == NULL)
+  {
+    fprintf(stderr, "Error opening file init.txt\n");
+    return 1;
+  } 
+  else
+  {
+    fprintf(init, "x\ty\tz\tvx\tvy\tvz\n");
+    for (u64 i = 0; i < n; i ++)
+    {
+      fprintf(init, "%g\t%g\t%g\t%g\t%g\t%g\n", p[i].x, p[i].y, p[i].z, p[i].vx, p[i].vy, p[i].vz);
+    }
+  }
+  fclose(init);
+
   const u64 s = sizeof(particle_t) * n;
   
   printf("\n\033[1mTotal memory size:\033[0m %llu B, %llu KiB, %llu MiB\n\n", s, s >> 10, s >> 20);
@@ -128,6 +145,23 @@ int main(int argc, char **argv)
       move_particles(p, dt, n);
 
       const f64 end = omp_get_wtime();
+
+      //write particles' position and velocity information as reference
+      FILE *ref = fopen("../ref/ref.txt", "w");
+      if (ref == NULL)
+      {
+        fprintf(stderr, "Error opening file init.txt\n");
+        return 1;
+      } 
+      else
+      {
+        fprintf(ref, "x\ty\tz\tvx\tvy\tvz\n");
+        for (u64 i = 0; i < n; i ++)
+        {
+          fprintf(ref, "%g\t%g\t%g\t%g\t%g\t%g\n", p[i].x, p[i].y, p[i].z, p[i].vx, p[i].vy, p[i].vz);
+        }
+      }
+      fclose(ref);
 
       //Number of interactions/iteration
       const f32 h1 = (f32)(n) * (f32)(n);

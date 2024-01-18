@@ -20,122 +20,67 @@ typedef struct particle_s {
 //generate initial positions and velocities
 void init(particle_t *p, u64 n)
 {
-    for (u64 i = 0; i < n; i++)
+  for (u64 i = 0; i < n; i++)
     {
-        //
-        u64 r1 = (u64)rand();
-        u64 r2 = (u64)rand();
-        f32 sign = (r1 > r2) ? 1 : -1;
+      //
+      u64 r1 = (u64)rand();
+      u64 r2 = (u64)rand();
+      f32 sign = (r1 > r2) ? 1 : -1;
       
-        //
-        p[i].x = sign * (f32)rand() / (f32)RAND_MAX;
-        p[i].y = (f32)rand() / (f32)RAND_MAX;
-        p[i].z = sign * (f32)rand() / (f32)RAND_MAX;
+      //
+      p[i].x = sign * (f32)rand() / (f32)RAND_MAX;
+      p[i].y = (f32)rand() / (f32)RAND_MAX;
+      p[i].z = sign * (f32)rand() / (f32)RAND_MAX;
 
-        //
-        p[i].vx = (f32)rand() / (f32)RAND_MAX;
-        p[i].vy = sign * (f32)rand() / (f32)RAND_MAX;
-        p[i].vz = (f32)rand() / (f32)RAND_MAX;
+      //
+      p[i].vx = (f32)rand() / (f32)RAND_MAX;
+      p[i].vy = sign * (f32)rand() / (f32)RAND_MAX;
+      p[i].vz = (f32)rand() / (f32)RAND_MAX;
     }
 }
 
-//enrolling by 4
+//
 void move_particles(particle_t *p, const f32 dt, u64 n)
 {
-  #define UNROLL4 4
-  
   //Used to avoid division by 0 when comparing a particle to itself
   const f32 softening = 1e-20;
   
   //For all particles
-  for (u64 i = 0; i < n; i ++)
+  for (u64 i = 0; i < n; i++)
     {
       //
-      f32 fx1 = 0.0;
-      f32 fx2 = 0.0;
-      f32 fx3 = 0.0;
-      f32 fx4 = 0.0;
-
-      f32 fy1 = 0.0;
-      f32 fy2 = 0.0;
-      f32 fy3 = 0.0;
-      f32 fy4 = 0.0;
-
-      f32 fz1 = 0.0;
-      f32 fz2 = 0.0;
-      f32 fz3 = 0.0;
-      f32 fz4 = 0.0;
+      f32 fx = 0.0;
+      f32 fy = 0.0;
+      f32 fz = 0.0;
 
       //Newton's law: 17 FLOPs (Floating-Point Operations) per iteration
-      for (u64 j = 0; j < (n - (n & (UNROLL4 - 1))); j += UNROLL4)
+      for (u64 j = 0; j < n; j++)
 	{ 
 	  //3 FLOPs (Floating-Point Operations) 
-	  const f32 dx1 = p[j].x - p[i].x; //1 (sub)
-    const f32 dx2 = p[j + 1].x - p[i].x;
-    const f32 dx3 = p[j + 2].x - p[i].x;
-    const f32 dx4 = p[j + 3].x - p[i].x;
-
-	  const f32 dy1 = p[j].y - p[i].y; //2 (sub)
-    const f32 dy2 = p[j + 1].y - p[i].y;
-    const f32 dy3 = p[j + 2].y - p[i].y;
-    const f32 dy4 = p[j + 3].y - p[i].y;
-
-	  const f32 dz1 = p[j].z - p[i].z; //3 (sub)
-    const f32 dz2 = p[j + 1].z - p[i].z;
-    const f32 dz3 = p[j + 2].z - p[i].z;
-    const f32 dz4 = p[j + 3].z - p[i].z;
+	  const f32 dx = p[j].x - p[i].x; //1 (sub)
+	  const f32 dy = p[j].y - p[i].y; //2 (sub)
+	  const f32 dz = p[j].z - p[i].z; //3 (sub)
 
 	  //Compute the distance between particle i and j: 6 FLOPs
-	  const f32 d_2_1 = (dx1 * dx1) + (dy1 * dy1) + (dz1 * dz1) + softening; //9 (mul, add)
-    const f32 d_2_2 = (dx2 * dx2) + (dy2 * dy2) + (dz2 * dz2) + softening;
-    const f32 d_2_3 = (dx3 * dx3) + (dy3 * dy3) + (dz3 * dz3) + softening;
-    const f32 d_2_4 = (dx4 * dx4) + (dy4 * dy4) + (dz4 * dz4) + softening;
+	  const f32 d_2 = (dx * dx) + (dy * dy) + (dz * dz) + softening; //9 (mul, add)
 
-	  //2 FLOPs ***replace pow(d_2, 3.0 / 2.0)***
-	  const f32 d_3_over_2_1 = d_2_1 * sqrt(d_2_1); //11 (mul, sqrt)
-    const f32 d_3_over_2_2 = d_2_2 * sqrt(d_2_2);
-    const f32 d_3_over_2_3 = d_2_3 * sqrt(d_2_3);
-    const f32 d_3_over_2_4 = d_2_4 * sqrt(d_2_4);
+	  //2 FLOPs (here, we consider pow to be 1 operation)
+	  const f32 d_3_over_2 = pow(d_2, 3.0 / 2.0); //11 (pow, div)
 	  
 	  //Calculate net force: 6 FLOPs
-	  fx1 += dx1 / d_3_over_2_1; //13 (add, div)
-    fx1 += dx1 / d_3_over_2_1;
-    fx1 += dx1 / d_3_over_2_1;
-    fx1 += dx1 / d_3_over_2_1;
-
-	  fy1 += dy1 / d_3_over_2_1; //15 (add, div)
-    fy2 += dy2 / d_3_over_2_2;
-    fy3 += dy3 / d_3_over_2_3;
-    fy4 += dy4 / d_3_over_2_4;
-
-	  fz1 += dz1 / d_3_over_2_1; //17 (add, div)
-    fz2 += dz2 / d_3_over_2_2;
-    fz3 += dz3 / d_3_over_2_3;
-    fz4 += dz4 / d_3_over_2_4;
+	  fx += dx / d_3_over_2; //13 (add, div)
+	  fy += dy / d_3_over_2; //15 (add, div)
+	  fz += dz / d_3_over_2; //17 (add, div)
 	}
 
-    for (u64 j = (n - (n & (UNROLL4 - 1))); j < n; j ++)
-    {
-      const f32 dx1 = p[j].x - p[i].x;
-      const f32 dy1 = p[j].y - p[i].y;
-      const f32 dz1 = p[j].z - p[i].z;
-
-      const f32 d_2_1 = (dx1 * dx1) + (dy1 * dy1) + (dz1 * dz1) + softening;
-      const f32 d_3_over_2_1 = d_2_1 * sqrt(d_2_1);
-
-      fx1 += dx1 / d_3_over_2_1;
-      fy1 += dy1 / d_3_over_2_1;
-      fz1 += dz1 / d_3_over_2_1;
-    }
-
       //Update particle velocities using the previously computed net force: 6 FLOPs 
-      p[i].vx += dt * (fx1 + fx2 + fx3 + fx4); //19 (mul, add)
-      p[i].vy += dt * (fy1 + fy2 + fy3 + fy4); //21 (mul, add)
-      p[i].vz += dt * (fz1 + fz2 + fz3 + fz4); //23 (mul, add)
+      p[i].vx += dt * fx; //19 (mul, add)
+      p[i].vy += dt * fy; //21 (mul, add)
+      p[i].vz += dt * fz; //23 (mul, add)
     }
 
   //Update positions: 6 FLOPs
-  for (u64 i = 0; i < (n - (n & (UNROLL4 - 1))); i += UNROLL4)
+  for (u64 i = 0; i < n; i++)
     {
       p[i].x += dt * p[i].vx;
       p[i].y += dt * p[i].vy;
