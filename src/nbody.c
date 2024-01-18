@@ -121,7 +121,6 @@ int main(int argc, char **argv)
   } 
   else
   {
-    fprintf(init, "x\ty\tz\tvx\tvy\tvz\n");
     for (u64 i = 0; i < n; i ++)
     {
       fprintf(init, "%g\t%g\t%g\t%g\t%g\t%g\n", p[i].x, p[i].y, p[i].z, p[i].vx, p[i].vy, p[i].vz);
@@ -150,12 +149,11 @@ int main(int argc, char **argv)
       FILE *ref = fopen("../ref/ref.txt", "w");
       if (ref == NULL)
       {
-        fprintf(stderr, "Error opening file init.txt\n");
+        fprintf(stderr, "Error opening file ref.txt\n");
         return 1;
       } 
       else
       {
-        fprintf(ref, "x\ty\tz\tvx\tvy\tvz\n");
         for (u64 i = 0; i < n; i ++)
         {
           fprintf(ref, "%g\t%g\t%g\t%g\t%g\t%g\n", p[i].x, p[i].y, p[i].z, p[i].vx, p[i].vy, p[i].vz);

@@ -143,6 +143,19 @@ void move_particles(particle_t *p, const f32 dt, u64 n)
     }
 }
 
+
+f64 compute_delta(f64 *p_ref, f64 *p, u64 n)
+{ 
+  f64 delta = 0.0;
+  for (u64 i = 0; i < n; i++)
+	{
+    delta += (p_ref[i] - p[i]);
+  }  
+	delta /= (f64)n;
+  return delta;
+}
+    
+
 //
 int main(int argc, char **argv)
 {
@@ -163,6 +176,44 @@ int main(int argc, char **argv)
   
   //
   particle_t *p = malloc(sizeof(particle_t) * n);
+  particle_t *p_ref = malloc(sizeof(particle_t) * n);
+
+  FILE *ref_result = fopen("../ref/ref.txt", "r");
+    if (ref_result == NULL)
+    {
+        fprintf(stderr, "Error opening file ref.txt\n");
+        return 1;
+    }
+    
+    char line[150];
+    u64 number = 0;
+    while (fgets(line, sizeof(line), ref_result) != NULL)
+    {
+        f32 temp1, temp2, temp3, temp4, temp5, temp6;
+        if ((sscanf(line, "%f %*f %*f %*f %*f %*f", &temp1) == 1) && (sscanf(line, "%*f %f %*f %*f %*f %*f", &temp2) == 1) && (sscanf(line, "%*f %*f %f %*f %*f %*f", &temp3) == 1) 
+            && (sscanf(line, "%*f %*f %*f %f %*f %*f", &temp4) == 1) && (sscanf(line, "%*f %*f %*f %*f %f %*f", &temp5) == 1) && (sscanf(line, "%*f %*f %*f %*f %*f %f", &temp6) == 1))
+            {
+                p_ref[number].x = temp1;
+                p_ref[number].y = temp2;
+                p_ref[number].z = temp3;
+                p_ref[number].vx = temp4;
+                p_ref[number].vy = temp5;
+                p_ref[number].vz = temp6;
+                number ++;
+            }
+        else
+        {
+            fprintf(stderr, "Error scanning file ref.txt\n");
+            return 1;
+        }
+        if (number >= n)
+        {
+            printf("full\n");
+            break;
+        }
+    }
+
+    fclose(ref_result);
 
   //
   init(p, n);
@@ -216,14 +267,21 @@ int main(int argc, char **argv)
 
   //Deviation in GFLOPs/s
   drate = sqrt(drate / (f64)(steps - warmup) - (rate * rate));
+
+
+  //delta
+  f64 delta = compute_delta((f64*)p_ref, (f64*)p, n);
   
   printf("-----------------------------------------------------\n");
   printf("\033[1m%s %4s \033[42m%10.1lf +- %.1lf GFLOP/s\033[0m\n",
-	 "Average performance:", "", rate, drate);
+	 "Average performance:", "", rate, drate);   
   printf("-----------------------------------------------------\n");
-    
+  printf("Delta: %g\n", delta);
+  printf("-----------------------------------------------------\n");
+
   //
   free(p);
+  free(p_ref);
 
   //
   return 0;
