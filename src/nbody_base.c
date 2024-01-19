@@ -28,7 +28,7 @@ void init(particle_t *p, u64 n)
     
     char line[150];
     u64 number = 0;
-    while (fgets(line, sizeof(line), ref_init) != NULL)
+    while ((fgets(line, sizeof(line), ref_init) != NULL) && (number < n))
     {
         f32 temp1, temp2, temp3, temp4, temp5, temp6;
         if ((sscanf(line, "%f %*f %*f %*f %*f %*f", &temp1) == 1) && (sscanf(line, "%*f %f %*f %*f %*f %*f", &temp2) == 1) && (sscanf(line, "%*f %*f %f %*f %*f %*f", &temp3) == 1) 
@@ -45,12 +45,6 @@ void init(particle_t *p, u64 n)
         else
         {
             fprintf(stderr, "Error scanning file init.txt\n");
-            return 1;
-        }
-        if (number >= n)
-        {
-            printf("full\n");
-            break;
         }
     }
 
@@ -106,15 +100,37 @@ void move_particles(particle_t *p, const f32 dt, u64 n)
     }
 }
 
-f64 compute_delta(f64 *p_ref, f64 *p, u64 n)
+f64 compute_delta_x(particle_t *p_ref, particle_t *p, u64 n)
 { 
-  f64 delta = 0.0;
-  for (u64 i = 0; i < n; i++)
-	{
-    delta += (p_ref[i] - p[i]);
-  }  
+    f64 delta = 0.0;
+    for (u64 i = 0; i < n; i++)
+	  {
+      delta += fabs((f64)p_ref[i].x - (f64)p[i].x);
+    }  
     delta /= (f64)n;
-  return delta;
+    return delta;
+}
+
+f64 compute_delta_y(particle_t *p_ref, particle_t *p, u64 n)
+{ 
+    f64 delta = 0.0;
+    for (u64 i = 0; i < n; i++)
+	  {
+      delta += fabs((f64)p_ref[i].y - (f64)p[i].y);
+    }  
+    delta /= (f64)n;
+    return delta;
+}
+
+f64 compute_delta_z(particle_t *p_ref, particle_t *p, u64 n)
+{ 
+    f64 delta = 0.0;
+    for (u64 i = 0; i < n; i++)
+	  {
+      delta += fabs((f64)p_ref[i].z - (f64)p[i].z);
+    }  
+    delta /= (f64)n;
+    return delta;
 }
 
 //
@@ -131,6 +147,8 @@ int main(int argc, char **argv)
 
   //
   f64 rate = 0.0, drate = 0.0;
+  f64 delta_x = 0.0, delta_y = 0.0, delta_z = 0.0;
+  f64 delta = 0.0;
 
   //Steps to skip for warm up
   const u64 warmup = 3;
@@ -148,7 +166,7 @@ int main(int argc, char **argv)
     
     char line[150];
     u64 number = 0;
-    while (fgets(line, sizeof(line), ref_result) != NULL)
+    while ((fgets(line, sizeof(line), ref_result) != NULL) && (number < n))
     {
         f32 temp1, temp2, temp3, temp4, temp5, temp6;
         if ((sscanf(line, "%f %*f %*f %*f %*f %*f", &temp1) == 1) && (sscanf(line, "%*f %f %*f %*f %*f %*f", &temp2) == 1) && (sscanf(line, "%*f %*f %f %*f %*f %*f", &temp3) == 1) 
@@ -167,11 +185,6 @@ int main(int argc, char **argv)
             fprintf(stderr, "Error scanning file ref.txt\n");
             return 1;
         }
-        if (number >= n)
-        {
-            printf("full\n");
-            break;
-        }
     }
 
     fclose(ref_result);
@@ -184,7 +197,7 @@ int main(int argc, char **argv)
   printf("\n\033[1mTotal memory size:\033[0m %llu B, %llu KiB, %llu MiB\n\n", s, s >> 10, s >> 20);
   
   //
-  printf("\033[1m%5s %10s %10s %8s\033[0m\n", "Step", "Time, s", "Interact/s", "GFLOP/s"); fflush(stdout);
+  printf("\033[1m%5s %10s %10s %8s %8s %8s %8s\033[0m\n", "Step", "Time, s", "Interact/s", "GFLOP/s", "delta x", "delta y", "delta z"); fflush(stdout);
   
   //
   for (u64 i = 0; i < steps; i++)
@@ -205,19 +218,26 @@ int main(int argc, char **argv)
       //Positions update                :  6 FLOPs x n 
       const f32 h2 = (17.0 * h1 + 6.0 * (f32)n + 6.0 * (f32)n) * 1e-9;
 
+      //delta x, delta y, delta z for each iteration
+      delta_x = compute_delta_x(p_ref, p, n);
+      delta_y = compute_delta_y(p_ref, p, n);
+      delta_z = compute_delta_z(p_ref, p, n);
+
       //Do not take warm up runs into account
       if (i >= warmup)
 	{
 	  rate += h2 / (f32)(end - start);
 	  drate += (h2 * h2) / (f32)((end - start) * (end - start));
+    delta += delta_x + delta_y +delta_z;   
 	}
       
       //
-      printf("%5llu %10.3e %10.3e %8.1f %s\n",
+      printf("%5llu %10.3e %10.3e %8.1f %g %g %g %s\n",
 	     i,
 	     (end - start),
 	     h1 / (end - start),
 	     h2 / (end - start),
+       delta_x, delta_y, delta_z,
 	     (i < warmup) ? "(warm up)" : "");
       
       fflush(stdout);
@@ -229,14 +249,14 @@ int main(int argc, char **argv)
   //Deviation in GFLOPs/s
   drate = sqrt(drate / (f64)(steps - warmup) - (rate * rate));
 
-  //delta
-  f64 delta = compute_delta((f64*)p_ref, (f64*)p, n);
+  //Average delta
+  delta /= ((f64)(steps - warmup) * 3.0); 
   
   printf("-----------------------------------------------------\n");
   printf("\033[1m%s %4s \033[42m%10.1lf +- %.1lf GFLOP/s\033[0m\n",
 	 "Average performance:", "", rate, drate);
   printf("-----------------------------------------------------\n");
-  printf("Delta: %g\n", delta);
+  printf("Average delta:\t%g\n", delta);
   printf("-----------------------------------------------------\n");
 
   //
