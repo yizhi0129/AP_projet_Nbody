@@ -24,7 +24,6 @@ void init(particle_t *p, u64 n)
     if (ref_init == NULL)
     {
         fprintf(stderr, "Error opening file init.txt\n");
-        return 1;
     }
     
     char line[150];
