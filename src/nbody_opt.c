@@ -160,7 +160,7 @@ f64 compute_delta_x(particle_t *p_ref, particle_t *p, u64 n)
     f64 delta = 0.0;
     for (u64 i = 0; i < n; i++)
 	  {
-      delta += fabs((f64)p_ref[i].x - (f64)p[i].x);
+      delta += (f64)p_ref[i].x - (f64)p[i].x;
     }  
     delta /= (f64)n;
     return delta;
@@ -171,7 +171,7 @@ f64 compute_delta_y(particle_t *p_ref, particle_t *p, u64 n)
     f64 delta = 0.0;
     for (u64 i = 0; i < n; i++)
 	  {
-      delta += fabs((f64)p_ref[i].y - (f64)p[i].y);
+      delta += (f64)p_ref[i].y - (f64)p[i].y;
     }  
     delta /= (f64)n;
     return delta;
@@ -182,7 +182,7 @@ f64 compute_delta_z(particle_t *p_ref, particle_t *p, u64 n)
     f64 delta = 0.0;
     for (u64 i = 0; i < n; i++)
 	  {
-      delta += fabs((f64)p_ref[i].z - (f64)p[i].z);
+      delta += (f64)p_ref[i].z - (f64)p[i].z;
     }  
     delta /= (f64)n;
     return delta;
