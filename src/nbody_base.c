@@ -17,26 +17,45 @@ typedef struct particle_s {
   
 } particle_t;
 
-//generate initial positions and velocities
+//use same initial conditions
 void init(particle_t *p, u64 n)
 {
-  for (u64 i = 0; i < n; i++)
+    FILE *ref_init = fopen("../ref/init.txt", "r");
+    if (ref_init == NULL)
     {
-      //
-      u64 r1 = (u64)rand();
-      u64 r2 = (u64)rand();
-      f32 sign = (r1 > r2) ? 1 : -1;
-      
-      //
-      p[i].x = sign * (f32)rand() / (f32)RAND_MAX;
-      p[i].y = (f32)rand() / (f32)RAND_MAX;
-      p[i].z = sign * (f32)rand() / (f32)RAND_MAX;
-
-      //
-      p[i].vx = (f32)rand() / (f32)RAND_MAX;
-      p[i].vy = sign * (f32)rand() / (f32)RAND_MAX;
-      p[i].vz = (f32)rand() / (f32)RAND_MAX;
+        fprintf(stderr, "Error opening file init.txt\n");
+        return 1;
     }
+    
+    char line[150];
+    u64 number = 0;
+    while (fgets(line, sizeof(line), ref_init) != NULL)
+    {
+        f32 temp1, temp2, temp3, temp4, temp5, temp6;
+        if ((sscanf(line, "%f %*f %*f %*f %*f %*f", &temp1) == 1) && (sscanf(line, "%*f %f %*f %*f %*f %*f", &temp2) == 1) && (sscanf(line, "%*f %*f %f %*f %*f %*f", &temp3) == 1) 
+            && (sscanf(line, "%*f %*f %*f %f %*f %*f", &temp4) == 1) && (sscanf(line, "%*f %*f %*f %*f %f %*f", &temp5) == 1) && (sscanf(line, "%*f %*f %*f %*f %*f %f", &temp6) == 1))
+            {
+                p[number].x = temp1;
+                p[number].y = temp2;
+                p[number].z = temp3;
+                p[number].vx = temp4;
+                p[number].vy = temp5;
+                p[number].vz = temp6;
+                number ++;
+            }
+        else
+        {
+            fprintf(stderr, "Error scanning file init.txt\n");
+            return 1;
+        }
+        if (number >= n)
+        {
+            printf("full\n");
+            break;
+        }
+    }
+
+    fclose(ref_init);
 }
 
 //
