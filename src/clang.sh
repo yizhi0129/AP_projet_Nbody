@@ -31,5 +31,4 @@ clang -march=native -g3 -Ofast -fopenmp -Rpass-analysis=loop-vectorize nbody_opt
 taskset -c 3 ./nbody_opt 1000 > ../results/opt_clang_Ofast.txt
 rm -Rf *~ nbody_opt
 
-clang -S nbody_base.c
-clang -S nbody_opt.c
+
