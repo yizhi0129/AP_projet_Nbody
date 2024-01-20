@@ -50,109 +50,68 @@ void init(particle_t *p, u64 n)
     fclose(ref_init);
 }
 
-//enrolling by 4
+//enrolling by 4 and parallelizing the outer loop
 void move_particles(particle_t *p, const f32 dt, u64 n)
 {
-  #define UNROLL4 4
-  
-  //Used to avoid division by 0 when comparing a particle to itself
-  const f32 softening = 1e-20;
-  
-  //For all particles
-  for (u64 i = 0; i < n; i ++)
+    const f32 softening = 1e-20;
+    #define UNROLL4 4
+
+    #pragma omp parallel for
+    for (u64 i = 0; i < n; i++)
     {
-      //
-      f32 fx1 = 0.0;
-      f32 fx2 = 0.0;
-      f32 fx3 = 0.0;
-      f32 fx4 = 0.0;
+        f32 fx[UNROLL4] = {0.0};
+        f32 fy[UNROLL4] = {0.0};
+        f32 fz[UNROLL4] = {0.0};
 
-      f32 fy1 = 0.0;
-      f32 fy2 = 0.0;
-      f32 fy3 = 0.0;
-      f32 fy4 = 0.0;
+        for (u64 j = 0; j < (n - (n % UNROLL4)); j += UNROLL4)
+        {
+            #pragma unroll
+            for (int k = 0; k < UNROLL4; k++)
+            {
+                const f32 dx = p[j + k].x - p[i].x;
+                const f32 dy = p[j + k].y - p[i].y;
+                const f32 dz = p[j + k].z - p[i].z;
 
-      f32 fz1 = 0.0;
-      f32 fz2 = 0.0;
-      f32 fz3 = 0.0;
-      f32 fz4 = 0.0;
+                const f32 d_2 = (dx * dx) + (dy * dy) + (dz * dz) + softening;
+                const f32 d_3_over_2 = d_2 * sqrt(d_2);
 
-      //Newton's law: 17 FLOPs (Floating-Point Operations) per iteration
-      for (u64 j = 0; j < (n - (n & (UNROLL4 - 1))); j += UNROLL4)
-	{ 
-	  //3 FLOPs (Floating-Point Operations) 
-	  const f32 dx1 = p[j].x - p[i].x; //1 (sub)
-    const f32 dx2 = p[j + 1].x - p[i].x;
-    const f32 dx3 = p[j + 2].x - p[i].x;
-    const f32 dx4 = p[j + 3].x - p[i].x;
+                fx[k] += dx / d_3_over_2;
+                fy[k] += dy / d_3_over_2;
+                fz[k] += dz / d_3_over_2;
+            }
+        }
 
-	  const f32 dy1 = p[j].y - p[i].y; //2 (sub)
-    const f32 dy2 = p[j + 1].y - p[i].y;
-    const f32 dy3 = p[j + 2].y - p[i].y;
-    const f32 dy4 = p[j + 3].y - p[i].y;
+        for (u64 j = (n - (n % UNROLL4)); j < n; j++)
+        {
+            const f32 dx = p[j].x - p[i].x;
+            const f32 dy = p[j].y - p[i].y;
+            const f32 dz = p[j].z - p[i].z;
 
-	  const f32 dz1 = p[j].z - p[i].z; //3 (sub)
-    const f32 dz2 = p[j + 1].z - p[i].z;
-    const f32 dz3 = p[j + 2].z - p[i].z;
-    const f32 dz4 = p[j + 3].z - p[i].z;
+            const f32 d_2 = (dx * dx) + (dy * dy) + (dz * dz) + softening;
+            const f32 d_3_over_2 = d_2 * sqrt(d_2);
 
-	  //Compute the distance between particle i and j: 6 FLOPs
-	  const f32 d_2_1 = (dx1 * dx1) + (dy1 * dy1) + (dz1 * dz1) + softening; //9 (mul, add)
-    const f32 d_2_2 = (dx2 * dx2) + (dy2 * dy2) + (dz2 * dz2) + softening;
-    const f32 d_2_3 = (dx3 * dx3) + (dy3 * dy3) + (dz3 * dz3) + softening;
-    const f32 d_2_4 = (dx4 * dx4) + (dy4 * dy4) + (dz4 * dz4) + softening;
+            fx[0] += dx / d_3_over_2;
+            fy[0] += dy / d_3_over_2;
+            fz[0] += dz / d_3_over_2;
+        }
 
-	  //2 FLOPs ***replace pow(d_2, 3.0 / 2.0)***
-	  const f32 d_3_over_2_1 = d_2_1 * sqrt(d_2_1); //11 (mul, sqrt)
-    const f32 d_3_over_2_2 = d_2_2 * sqrt(d_2_2);
-    const f32 d_3_over_2_3 = d_2_3 * sqrt(d_2_3);
-    const f32 d_3_over_2_4 = d_2_4 * sqrt(d_2_4);
-	  
-	  //Calculate net force: 6 FLOPs
-	  fx1 += dx1 / d_3_over_2_1; //13 (add, div)
-    fx1 += dx1 / d_3_over_2_1;
-    fx1 += dx1 / d_3_over_2_1;
-    fx1 += dx1 / d_3_over_2_1;
-
-	  fy1 += dy1 / d_3_over_2_1; //15 (add, div)
-    fy2 += dy2 / d_3_over_2_2;
-    fy3 += dy3 / d_3_over_2_3;
-    fy4 += dy4 / d_3_over_2_4;
-
-	  fz1 += dz1 / d_3_over_2_1; //17 (add, div)
-    fz2 += dz2 / d_3_over_2_2;
-    fz3 += dz3 / d_3_over_2_3;
-    fz4 += dz4 / d_3_over_2_4;
-	}
-
-    for (u64 j = (n - (n & (UNROLL4 - 1))); j < n; j ++)
-    {
-      const f32 dx1 = p[j].x - p[i].x;
-      const f32 dy1 = p[j].y - p[i].y;
-      const f32 dz1 = p[j].z - p[i].z;
-
-      const f32 d_2_1 = (dx1 * dx1) + (dy1 * dy1) + (dz1 * dz1) + softening;
-      const f32 d_3_over_2_1 = d_2_1 * sqrt(d_2_1);
-
-      fx1 += dx1 / d_3_over_2_1;
-      fy1 += dy1 / d_3_over_2_1;
-      fz1 += dz1 / d_3_over_2_1;
+        #pragma omp critical
+        {
+            p[i].vx += dt * (fx[0] + fx[1] + fx[2] + fx[3]);
+            p[i].vy += dt * (fy[0] + fy[1] + fy[2] + fy[3]);
+            p[i].vz += dt * (fz[0] + fz[1] + fz[2] + fz[3]);
+        }
     }
 
-      //Update particle velocities using the previously computed net force: 6 FLOPs 
-      p[i].vx += dt * (fx1 + fx2 + fx3 + fx4); //19 (mul, add)
-      p[i].vy += dt * (fy1 + fy2 + fy3 + fy4); //21 (mul, add)
-      p[i].vz += dt * (fz1 + fz2 + fz3 + fz4); //23 (mul, add)
-    }
-
-  //Update positions: 6 FLOPs
-  for (u64 i = 0; i < (n - (n & (UNROLL4 - 1))); i += UNROLL4)
+    #pragma omp parallel for
+    for (u64 i = 0; i < n; i++)
     {
-      p[i].x += dt * p[i].vx;
-      p[i].y += dt * p[i].vy;
-      p[i].z += dt * p[i].vz;
+        p[i].x += dt * p[i].vx;
+        p[i].y += dt * p[i].vy;
+        p[i].z += dt * p[i].vz;
     }
 }
+
 
 
 f64 compute_delta_x(particle_t *p_ref, particle_t *p, u64 n)
@@ -288,7 +247,7 @@ int main(int argc, char **argv)
 	}
       
       //
-      printf("%5llu %10.3e %10.3e %8.1f %g %g %g %s\n",
+      printf("%5llu %10.3e %10.3e %8.1f %10.3e %10.3e %10.3e %s\n",
 	     i,
 	     (end - start),
 	     h1 / (end - start),
@@ -312,7 +271,7 @@ int main(int argc, char **argv)
   printf("\033[1m%s %4s \033[42m%10.1lf +- %.1lf GFLOP/s\033[0m\n",
 	 "Average performance:", "", rate, drate);   
   printf("-----------------------------------------------------\n");
-  printf("Average delta:\t%g\n", delta);
+  printf("Average delta:\t%10.3e\n", delta);
   printf("-----------------------------------------------------\n");
 
   //

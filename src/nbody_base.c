@@ -51,47 +51,36 @@ void init(particle_t *p, u64 n)
     fclose(ref_init);
 }
 
-//
+
 void move_particles(particle_t *p, const f32 dt, u64 n)
 {
-  //Used to avoid division by 0 when comparing a particle to itself
   const f32 softening = 1e-20;
   
-  //For all particles
   for (u64 i = 0; i < n; i++)
     {
-      //
       f32 fx = 0.0;
       f32 fy = 0.0;
       f32 fz = 0.0;
 
-      //Newton's law: 17 FLOPs (Floating-Point Operations) per iteration
       for (u64 j = 0; j < n; j++)
 	{ 
-	  //3 FLOPs (Floating-Point Operations) 
-	  const f32 dx = p[j].x - p[i].x; //1 (sub)
-	  const f32 dy = p[j].y - p[i].y; //2 (sub)
-	  const f32 dz = p[j].z - p[i].z; //3 (sub)
+	  const f32 dx = p[j].x - p[i].x; 
+	  const f32 dy = p[j].y - p[i].y; 
+	  const f32 dz = p[j].z - p[i].z; 
 
-	  //Compute the distance between particle i and j: 6 FLOPs
-	  const f32 d_2 = (dx * dx) + (dy * dy) + (dz * dz) + softening; //9 (mul, add)
+	  const f32 d_2 = (dx * dx) + (dy * dy) + (dz * dz) + softening;
 
-	  //2 FLOPs (here, we consider pow to be 1 operation)
-	  const f32 d_3_over_2 = pow(d_2, 3.0 / 2.0); //11 (pow, div)
+	  const f32 d_3_over_2 = pow(d_2, 3.0 / 2.0);
 	  
-	  //Calculate net force: 6 FLOPs
-	  fx += dx / d_3_over_2; //13 (add, div)
-	  fy += dy / d_3_over_2; //15 (add, div)
-	  fz += dz / d_3_over_2; //17 (add, div)
-	}
-
-      //Update particle velocities using the previously computed net force: 6 FLOPs 
-      p[i].vx += dt * fx; //19 (mul, add)
-      p[i].vy += dt * fy; //21 (mul, add)
-      p[i].vz += dt * fz; //23 (mul, add)
+	  fx += dx / d_3_over_2; 
+	  fy += dy / d_3_over_2; 
+	  fz += dz / d_3_over_2; 
+	} 
+      p[i].vx += dt * fx; 
+      p[i].vy += dt * fy; 
+      p[i].vz += dt * fz; 
     }
 
-  //Update positions: 6 FLOPs
   for (u64 i = 0; i < n; i++)
     {
       p[i].x += dt * p[i].vx;
@@ -232,7 +221,7 @@ int main(int argc, char **argv)
 	}
       
       //
-      printf("%5llu %10.3e %10.3e %8.1f %g %g %g %s\n",
+      printf("%5llu %10.3e %10.3e %8.1f %10.3e %10.3e %10.3e %s\n",
 	     i,
 	     (end - start),
 	     h1 / (end - start),
@@ -256,7 +245,7 @@ int main(int argc, char **argv)
   printf("\033[1m%s %4s \033[42m%10.1lf +- %.1lf GFLOP/s\033[0m\n",
 	 "Average performance:", "", rate, drate);
   printf("-----------------------------------------------------\n");
-  printf("Average delta:\t%g\n", delta);
+  printf("Average delta:\t%10.3e\n", delta);
   printf("-----------------------------------------------------\n");
 
   //

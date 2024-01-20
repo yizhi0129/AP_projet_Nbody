@@ -1,5 +1,6 @@
 #!/bin/bash
-sudo cpupower -c all frequency-set -g performance
+
+#sudo cpupower -c all frequency-set -g performance
 
 cpupower -c all frequency-info > ../info/frequency.info
 
