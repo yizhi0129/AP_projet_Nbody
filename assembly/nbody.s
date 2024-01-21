@@ -5,6 +5,7 @@
 init:
 .LFB6:
 	.cfi_startproc
+	endbr64
 	pushq	%rbp
 	.cfi_def_cfa_offset 16
 	.cfi_offset 6, -16
@@ -23,8 +24,8 @@ init:
 	cltq
 	movq	%rax, -8(%rbp)
 	movq	-16(%rbp), %rax
-	cmpq	%rax, -8(%rbp)
-	jnb	.L3
+	cmpq	-8(%rbp), %rax
+	jbe	.L3
 	movss	.LC0(%rip), %xmm0
 	jmp	.L4
 .L3:
@@ -32,7 +33,6 @@ init:
 .L4:
 	movss	%xmm0, -28(%rbp)
 	call	rand@PLT
-	pxor	%xmm0, %xmm0
 	cvtsi2ssl	%eax, %xmm0
 	mulss	-28(%rbp), %xmm0
 	movq	-24(%rbp), %rdx
@@ -47,7 +47,6 @@ init:
 	divss	%xmm1, %xmm0
 	movss	%xmm0, (%rax)
 	call	rand@PLT
-	pxor	%xmm0, %xmm0
 	cvtsi2ssl	%eax, %xmm0
 	movq	-24(%rbp), %rdx
 	movq	%rdx, %rax
@@ -61,7 +60,6 @@ init:
 	divss	%xmm1, %xmm0
 	movss	%xmm0, 4(%rax)
 	call	rand@PLT
-	pxor	%xmm0, %xmm0
 	cvtsi2ssl	%eax, %xmm0
 	mulss	-28(%rbp), %xmm0
 	movq	-24(%rbp), %rdx
@@ -76,7 +74,6 @@ init:
 	divss	%xmm1, %xmm0
 	movss	%xmm0, 8(%rax)
 	call	rand@PLT
-	pxor	%xmm0, %xmm0
 	cvtsi2ssl	%eax, %xmm0
 	movq	-24(%rbp), %rdx
 	movq	%rdx, %rax
@@ -90,7 +87,6 @@ init:
 	divss	%xmm1, %xmm0
 	movss	%xmm0, 12(%rax)
 	call	rand@PLT
-	pxor	%xmm0, %xmm0
 	cvtsi2ssl	%eax, %xmm0
 	mulss	-28(%rbp), %xmm0
 	movq	-24(%rbp), %rdx
@@ -105,7 +101,6 @@ init:
 	divss	%xmm1, %xmm0
 	movss	%xmm0, 16(%rax)
 	call	rand@PLT
-	pxor	%xmm0, %xmm0
 	cvtsi2ssl	%eax, %xmm0
 	movq	-24(%rbp), %rdx
 	movq	%rdx, %rax
@@ -136,6 +131,7 @@ init:
 move_particles:
 .LFB7:
 	.cfi_startproc
+	endbr64
 	pushq	%rbp
 	.cfi_def_cfa_offset 16
 	.cfi_offset 6, -16
@@ -231,12 +227,8 @@ move_particles:
 	movss	-48(%rbp), %xmm1
 	addss	%xmm1, %xmm0
 	movss	%xmm0, -32(%rbp)
-	pxor	%xmm2, %xmm2
-	cvtss2sd	-32(%rbp), %xmm2
-	movq	%xmm2, %rax
-	movsd	.LC5(%rip), %xmm0
-	movapd	%xmm0, %xmm1
-	movq	%rax, %xmm0
+	cvtss2sd	-32(%rbp), %xmm0
+	movsd	.LC5(%rip), %xmm1
 	call	pow@PLT
 	cvtsd2ss	%xmm0, %xmm0
 	movss	%xmm0, -28(%rbp)
@@ -477,6 +469,7 @@ move_particles:
 main:
 .LFB8:
 	.cfi_startproc
+	endbr64
 	pushq	%rbp
 	.cfi_def_cfa_offset 16
 	.cfi_offset 6, -16
@@ -518,10 +511,8 @@ main:
 	movq	%rdx, %rsi
 	movq	%rax, %rdi
 	call	init
-	leaq	.LC8(%rip), %rax
-	movq	%rax, %rsi
-	leaq	.LC9(%rip), %rax
-	movq	%rax, %rdi
+	leaq	.LC8(%rip), %rsi
+	leaq	.LC9(%rip), %rdi
 	call	fopen@PLT
 	movq	%rax, -40(%rbp)
 	cmpq	$0, -40(%rbp)
@@ -530,8 +521,7 @@ main:
 	movq	%rax, %rcx
 	movl	$28, %edx
 	movl	$1, %esi
-	leaq	.LC10(%rip), %rax
-	movq	%rax, %rdi
+	leaq	.LC10(%rip), %rdi
 	call	fwrite@PLT
 	movl	$1, %eax
 	jmp	.L17
@@ -548,8 +538,7 @@ main:
 	movq	-48(%rbp), %rax
 	addq	%rdx, %rax
 	movss	20(%rax), %xmm0
-	pxor	%xmm4, %xmm4
-	cvtss2sd	%xmm0, %xmm4
+	cvtss2sd	%xmm0, %xmm5
 	movq	-96(%rbp), %rdx
 	movq	%rdx, %rax
 	addq	%rax, %rax
@@ -559,8 +548,7 @@ main:
 	movq	-48(%rbp), %rax
 	addq	%rdx, %rax
 	movss	16(%rax), %xmm0
-	pxor	%xmm3, %xmm3
-	cvtss2sd	%xmm0, %xmm3
+	cvtss2sd	%xmm0, %xmm4
 	movq	-96(%rbp), %rdx
 	movq	%rdx, %rax
 	addq	%rax, %rax
@@ -570,8 +558,7 @@ main:
 	movq	-48(%rbp), %rax
 	addq	%rdx, %rax
 	movss	12(%rax), %xmm0
-	pxor	%xmm2, %xmm2
-	cvtss2sd	%xmm0, %xmm2
+	cvtss2sd	%xmm0, %xmm3
 	movq	-96(%rbp), %rdx
 	movq	%rdx, %rax
 	addq	%rax, %rax
@@ -581,8 +568,7 @@ main:
 	movq	-48(%rbp), %rax
 	addq	%rdx, %rax
 	movss	8(%rax), %xmm0
-	pxor	%xmm1, %xmm1
-	cvtss2sd	%xmm0, %xmm1
+	cvtss2sd	%xmm0, %xmm2
 	movq	-96(%rbp), %rdx
 	movq	%rdx, %rax
 	addq	%rax, %rax
@@ -592,7 +578,7 @@ main:
 	movq	-48(%rbp), %rax
 	addq	%rdx, %rax
 	movss	4(%rax), %xmm0
-	cvtss2sd	%xmm0, %xmm0
+	cvtss2sd	%xmm0, %xmm1
 	movq	-96(%rbp), %rdx
 	movq	%rdx, %rax
 	addq	%rax, %rax
@@ -601,19 +587,10 @@ main:
 	movq	%rax, %rdx
 	movq	-48(%rbp), %rax
 	addq	%rdx, %rax
-	movss	(%rax), %xmm5
-	pxor	%xmm6, %xmm6
-	cvtss2sd	%xmm5, %xmm6
-	movq	%xmm6, %rdx
+	movss	(%rax), %xmm0
+	cvtss2sd	%xmm0, %xmm0
 	movq	-40(%rbp), %rax
-	movapd	%xmm4, %xmm5
-	movapd	%xmm3, %xmm4
-	movapd	%xmm2, %xmm3
-	movapd	%xmm1, %xmm2
-	movapd	%xmm0, %xmm1
-	movq	%rdx, %xmm0
-	leaq	.LC11(%rip), %rdx
-	movq	%rdx, %rsi
+	leaq	.LC11(%rip), %rsi
 	movq	%rax, %rdi
 	movl	$6, %eax
 	call	fprintf@PLT
@@ -639,19 +616,14 @@ main:
 	movq	%rax, %rdx
 	movq	-32(%rbp), %rax
 	movq	%rax, %rsi
-	leaq	.LC12(%rip), %rax
-	movq	%rax, %rdi
+	leaq	.LC12(%rip), %rdi
 	movl	$0, %eax
 	call	printf@PLT
 	leaq	.LC13(%rip), %r8
-	leaq	.LC14(%rip), %rax
-	movq	%rax, %rcx
-	leaq	.LC15(%rip), %rax
-	movq	%rax, %rdx
-	leaq	.LC16(%rip), %rax
-	movq	%rax, %rsi
-	leaq	.LC17(%rip), %rax
-	movq	%rax, %rdi
+	leaq	.LC14(%rip), %rcx
+	leaq	.LC15(%rip), %rdx
+	leaq	.LC16(%rip), %rsi
+	leaq	.LC17(%rip), %rdi
 	movl	$0, %eax
 	call	printf@PLT
 	movq	stdout(%rip), %rax
@@ -673,10 +645,8 @@ main:
 	call	omp_get_wtime@PLT
 	movq	%xmm0, %rax
 	movq	%rax, -16(%rbp)
-	leaq	.LC8(%rip), %rax
-	movq	%rax, %rsi
-	leaq	.LC18(%rip), %rax
-	movq	%rax, %rdi
+	leaq	.LC8(%rip), %rsi
+	leaq	.LC18(%rip), %rdi
 	call	fopen@PLT
 	movq	%rax, -8(%rbp)
 	cmpq	$0, -8(%rbp)
@@ -685,8 +655,7 @@ main:
 	movq	%rax, %rcx
 	movl	$27, %edx
 	movl	$1, %esi
-	leaq	.LC19(%rip), %rax
-	movq	%rax, %rdi
+	leaq	.LC19(%rip), %rdi
 	call	fwrite@PLT
 	movl	$1, %eax
 	jmp	.L17
@@ -703,8 +672,7 @@ main:
 	movq	-48(%rbp), %rax
 	addq	%rdx, %rax
 	movss	20(%rax), %xmm0
-	pxor	%xmm4, %xmm4
-	cvtss2sd	%xmm0, %xmm4
+	cvtss2sd	%xmm0, %xmm5
 	movq	-80(%rbp), %rdx
 	movq	%rdx, %rax
 	addq	%rax, %rax
@@ -714,8 +682,7 @@ main:
 	movq	-48(%rbp), %rax
 	addq	%rdx, %rax
 	movss	16(%rax), %xmm0
-	pxor	%xmm3, %xmm3
-	cvtss2sd	%xmm0, %xmm3
+	cvtss2sd	%xmm0, %xmm4
 	movq	-80(%rbp), %rdx
 	movq	%rdx, %rax
 	addq	%rax, %rax
@@ -725,8 +692,7 @@ main:
 	movq	-48(%rbp), %rax
 	addq	%rdx, %rax
 	movss	12(%rax), %xmm0
-	pxor	%xmm2, %xmm2
-	cvtss2sd	%xmm0, %xmm2
+	cvtss2sd	%xmm0, %xmm3
 	movq	-80(%rbp), %rdx
 	movq	%rdx, %rax
 	addq	%rax, %rax
@@ -736,8 +702,7 @@ main:
 	movq	-48(%rbp), %rax
 	addq	%rdx, %rax
 	movss	8(%rax), %xmm0
-	pxor	%xmm1, %xmm1
-	cvtss2sd	%xmm0, %xmm1
+	cvtss2sd	%xmm0, %xmm2
 	movq	-80(%rbp), %rdx
 	movq	%rdx, %rax
 	addq	%rax, %rax
@@ -747,7 +712,7 @@ main:
 	movq	-48(%rbp), %rax
 	addq	%rdx, %rax
 	movss	4(%rax), %xmm0
-	cvtss2sd	%xmm0, %xmm0
+	cvtss2sd	%xmm0, %xmm1
 	movq	-80(%rbp), %rdx
 	movq	%rdx, %rax
 	addq	%rax, %rax
@@ -756,19 +721,10 @@ main:
 	movq	%rax, %rdx
 	movq	-48(%rbp), %rax
 	addq	%rdx, %rax
-	movss	(%rax), %xmm5
-	pxor	%xmm7, %xmm7
-	cvtss2sd	%xmm5, %xmm7
-	movq	%xmm7, %rdx
+	movss	(%rax), %xmm0
+	cvtss2sd	%xmm0, %xmm0
 	movq	-8(%rbp), %rax
-	movapd	%xmm4, %xmm5
-	movapd	%xmm3, %xmm4
-	movapd	%xmm2, %xmm3
-	movapd	%xmm1, %xmm2
-	movapd	%xmm0, %xmm1
-	movq	%rdx, %xmm0
-	leaq	.LC11(%rip), %rdx
-	movq	%rdx, %rsi
+	leaq	.LC11(%rip), %rsi
 	movq	%rax, %rdi
 	movl	$6, %eax
 	call	fprintf@PLT
@@ -783,7 +739,6 @@ main:
 	movq	-72(%rbp), %rax
 	testq	%rax, %rax
 	js	.L24
-	pxor	%xmm1, %xmm1
 	cvtsi2ssq	%rax, %xmm1
 	jmp	.L25
 .L24:
@@ -791,7 +746,6 @@ main:
 	shrq	%rdx
 	andl	$1, %eax
 	orq	%rax, %rdx
-	pxor	%xmm0, %xmm0
 	cvtsi2ssq	%rdx, %xmm0
 	movaps	%xmm0, %xmm1
 	addss	%xmm0, %xmm1
@@ -799,7 +753,6 @@ main:
 	movq	-72(%rbp), %rax
 	testq	%rax, %rax
 	js	.L26
-	pxor	%xmm0, %xmm0
 	cvtsi2ssq	%rax, %xmm0
 	jmp	.L27
 .L26:
@@ -807,20 +760,17 @@ main:
 	shrq	%rdx
 	andl	$1, %eax
 	orq	%rax, %rdx
-	pxor	%xmm0, %xmm0
 	cvtsi2ssq	%rdx, %xmm0
 	addss	%xmm0, %xmm0
 .L27:
 	mulss	%xmm1, %xmm0
 	movss	%xmm0, -120(%rbp)
-	pxor	%xmm1, %xmm1
 	cvtss2sd	-120(%rbp), %xmm1
 	movsd	.LC20(%rip), %xmm0
 	mulsd	%xmm0, %xmm1
 	movq	-72(%rbp), %rax
 	testq	%rax, %rax
 	js	.L28
-	pxor	%xmm0, %xmm0
 	cvtsi2ssq	%rax, %xmm0
 	jmp	.L29
 .L28:
@@ -828,11 +778,9 @@ main:
 	shrq	%rdx
 	andl	$1, %eax
 	orq	%rax, %rdx
-	pxor	%xmm0, %xmm0
 	cvtsi2ssq	%rdx, %xmm0
 	addss	%xmm0, %xmm0
 .L29:
-	pxor	%xmm2, %xmm2
 	cvtss2sd	%xmm0, %xmm2
 	movsd	.LC21(%rip), %xmm0
 	mulsd	%xmm2, %xmm0
@@ -840,7 +788,6 @@ main:
 	movq	-72(%rbp), %rax
 	testq	%rax, %rax
 	js	.L30
-	pxor	%xmm0, %xmm0
 	cvtsi2ssq	%rax, %xmm0
 	jmp	.L31
 .L30:
@@ -848,11 +795,9 @@ main:
 	shrq	%rdx
 	andl	$1, %eax
 	orq	%rax, %rdx
-	pxor	%xmm0, %xmm0
 	cvtsi2ssq	%rdx, %xmm0
 	addss	%xmm0, %xmm0
 .L31:
-	pxor	%xmm2, %xmm2
 	cvtss2sd	%xmm0, %xmm2
 	movsd	.LC21(%rip), %xmm0
 	mulsd	%xmm2, %xmm0
@@ -866,7 +811,6 @@ main:
 	jb	.L32
 	movsd	-16(%rbp), %xmm0
 	subsd	-24(%rbp), %xmm0
-	pxor	%xmm1, %xmm1
 	cvtsd2ss	%xmm0, %xmm1
 	movss	-116(%rbp), %xmm0
 	divss	%xmm1, %xmm0
@@ -897,28 +841,22 @@ main:
 .L33:
 	leaq	.LC24(%rip), %rax
 .L34:
-	pxor	%xmm0, %xmm0
 	cvtss2sd	-116(%rbp), %xmm0
 	movsd	-16(%rbp), %xmm1
 	subsd	-24(%rbp), %xmm1
 	movapd	%xmm0, %xmm2
 	divsd	%xmm1, %xmm2
-	pxor	%xmm0, %xmm0
 	cvtss2sd	-120(%rbp), %xmm0
 	movsd	-16(%rbp), %xmm1
 	subsd	-24(%rbp), %xmm1
-	movapd	%xmm0, %xmm3
-	divsd	%xmm1, %xmm3
+	divsd	%xmm1, %xmm0
+	movapd	%xmm0, %xmm1
 	movsd	-16(%rbp), %xmm0
 	subsd	-24(%rbp), %xmm0
-	movq	%xmm0, %rsi
 	movq	-88(%rbp), %rcx
 	movq	%rax, %rdx
-	movapd	%xmm3, %xmm1
-	movq	%rsi, %xmm0
 	movq	%rcx, %rsi
-	leaq	.LC25(%rip), %rax
-	movq	%rax, %rdi
+	leaq	.LC25(%rip), %rdi
 	movl	$3, %eax
 	call	printf@PLT
 	movq	stdout(%rip), %rax
@@ -933,7 +871,6 @@ main:
 	subq	-56(%rbp), %rax
 	testq	%rax, %rax
 	js	.L36
-	pxor	%xmm0, %xmm0
 	cvtsi2sdq	%rax, %xmm0
 	jmp	.L37
 .L36:
@@ -941,18 +878,17 @@ main:
 	shrq	%rdx
 	andl	$1, %eax
 	orq	%rax, %rdx
-	pxor	%xmm0, %xmm0
 	cvtsi2sdq	%rdx, %xmm0
 	addsd	%xmm0, %xmm0
 .L37:
 	movsd	-112(%rbp), %xmm1
 	divsd	%xmm0, %xmm1
-	movsd	%xmm1, -112(%rbp)
+	movapd	%xmm1, %xmm0
+	movsd	%xmm0, -112(%rbp)
 	movq	-64(%rbp), %rax
 	subq	-56(%rbp), %rax
 	testq	%rax, %rax
 	js	.L38
-	pxor	%xmm0, %xmm0
 	cvtsi2sdq	%rax, %xmm0
 	jmp	.L39
 .L38:
@@ -960,7 +896,6 @@ main:
 	shrq	%rdx
 	andl	$1, %eax
 	orq	%rax, %rdx
-	pxor	%xmm0, %xmm0
 	cvtsi2sdq	%rdx, %xmm0
 	addsd	%xmm0, %xmm0
 .L39:
@@ -969,28 +904,22 @@ main:
 	movsd	-112(%rbp), %xmm0
 	mulsd	%xmm0, %xmm0
 	subsd	%xmm0, %xmm1
-	movq	%xmm1, %rax
-	movq	%rax, %xmm0
+	movapd	%xmm1, %xmm0
 	call	sqrt@PLT
 	movq	%xmm0, %rax
 	movq	%rax, -104(%rbp)
-	leaq	.LC26(%rip), %rax
-	movq	%rax, %rdi
+	leaq	.LC26(%rip), %rdi
 	call	puts@PLT
 	movsd	-104(%rbp), %xmm0
 	movq	-112(%rbp), %rax
 	movapd	%xmm0, %xmm1
 	movq	%rax, %xmm0
-	leaq	.LC24(%rip), %rax
-	movq	%rax, %rdx
-	leaq	.LC27(%rip), %rax
-	movq	%rax, %rsi
-	leaq	.LC28(%rip), %rax
-	movq	%rax, %rdi
+	leaq	.LC24(%rip), %rdx
+	leaq	.LC27(%rip), %rsi
+	leaq	.LC28(%rip), %rdi
 	movl	$2, %eax
 	call	printf@PLT
-	leaq	.LC26(%rip), %rax
-	movq	%rax, %rdi
+	leaq	.LC26(%rip), %rdi
 	call	puts@PLT
 	movq	-48(%rbp), %rax
 	movq	%rax, %rdi
@@ -1009,7 +938,7 @@ main:
 	.long	1065353216
 	.align 4
 .LC1:
-	.long	-1082130432
+	.long	3212836864
 	.align 4
 .LC2:
 	.long	1325400064
@@ -1033,7 +962,23 @@ main:
 	.long	1075314688
 	.align 8
 .LC22:
-	.long	-400107883
+	.long	3894859413
 	.long	1041313291
-	.ident	"GCC: (GNU) 13.2.1 20230801"
+	.ident	"GCC: (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0"
 	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	 1f - 0f
+	.long	 4f - 1f
+	.long	 5
+0:
+	.string	 "GNU"
+1:
+	.align 8
+	.long	 0xc0000002
+	.long	 3f - 2f
+2:
+	.long	 0x3
+3:
+	.align 8
+4:
