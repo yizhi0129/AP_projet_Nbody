@@ -11,8 +11,9 @@ set xtics ("GCC -O0" 0, "GCC -O2" 1, "GCC -O3" 2, "GCC -Ofast" 3, "CLANG -O0" 4,
 
 set ylabel "GFLOP/s"
 
+set key at 0.5, graph 1 top left
 plot 'perf_base.txt' using 0:1 with boxes notitle, \
-    '' using 0:1:2 with yerrorbars title 'Error Bars' lc rgb "red" key at 0.5, graph 1 top left
+    '' using 0:1:2 with yerrorbars title 'Error Bars' lc rgb "red" 
 
 
 set title "Optimized Performance (core 3)"
@@ -28,8 +29,9 @@ set xtics ("GCC -O0" 0, "GCC -O2" 1, "GCC -O3" 2, "GCC -Ofast" 3, "CLANG -O0" 4,
 
 set ylabel "GFLOP/s"
 
+set key at 0.5, graph 1 top left
 plot 'perf_opt.txt' using 0:1 with boxes notitle, \
-    '' using 0:1:2 with yerrorbars title 'Error Bars' lc rgb "red" key at 0.5, graph 1 top left
+    '' using 0:1:2 with yerrorbars title 'Error Bars' lc rgb "red" 
 
 
 set title "Optimized NUMA Performance"
@@ -45,8 +47,9 @@ set xtics ("GCC -O0" 0, "GCC -O2" 1, "GCC -O3" 2, "GCC -Ofast" 3, "CLANG -O0" 4,
 
 set ylabel "GFLOP/s"
 
+set key at 0.5, graph 1 top left
 plot 'perf_opt2.txt' using 0:1 with boxes notitle, \
-    '' using 0:1:2 with yerrorbars title 'Error Bars' lc rgb "red" key at 0.5, graph 1 top left
+    '' using 0:1:2 with yerrorbars title 'Error Bars' lc rgb "red" 
 
 
 
@@ -63,5 +66,6 @@ set xtics ("GCC -O0" 0, "GCC -O2" 1, "GCC -O3" 2, "GCC -Ofast" 3, "CLANG -O0" 4,
 
 set ylabel "GFLOP/s"
 
+set key at 0.5, graph 1 top left
 plot 'perf_opt3.txt' using 0:1 with boxes notitle, \
-    '' using 0:1:2 with yerrorbars title 'Error Bars' lc rgb "red" key at 0.5, graph 1 top left
+    '' using 0:1:2 with yerrorbars title 'Error Bars' lc rgb "red" 
