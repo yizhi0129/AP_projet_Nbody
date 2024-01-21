@@ -63,6 +63,7 @@ void move_particles(particle_t *p, const f32 dt, u64 n)
         f32 fy[UNROLL4] = {0.0};
         f32 fz[UNROLL4] = {0.0};
 
+        #pragma omp parallel for
         for (u64 j = 0; j < (n - (n % UNROLL4)); j += UNROLL4)
         {
             #pragma unroll
@@ -81,6 +82,7 @@ void move_particles(particle_t *p, const f32 dt, u64 n)
             }
         }
 
+        #pragma omp simd reduction(+:fx,fy,fz)
         for (u64 j = (n - (n % UNROLL4)); j < n; j++)
         {
             const f32 dx = p[j].x - p[i].x;
