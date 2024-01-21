@@ -50,3 +50,21 @@ rm -Rf *~ nbody_opt
 clang -march=native -g3 -Ofast -fopenmp nbody_opt.c -o nbody_opt -lm
 OMP_PROC_BIND=close OMP_PLACES=cores numactl --membind=0 ./nbody_opt > ../results/opt_clang_Ofast_numa.txt
 rm -Rf *~ nbody_opt
+
+
+
+clang -march=native -g3 -O0 -fopenmp nbody_opt.c -o nbody_opt -lm
+./nbody_opt > ../results/opt_clang_O0_free.txt
+rm -Rf *~ nbody_opt
+
+clang -march=native -g3 -O2 -fopenmp nbody_opt.c -o nbody_opt -lm
+./nbody_opt > ../results/opt_clang_O2_free.txt
+rm -Rf *~ nbody_opt
+
+clang -march=native -g3 -O3 -fopenmp nbody_opt.c -o nbody_opt -lm
+./nbody_opt > ../results/opt_clang_O3_free.txt
+rm -Rf *~ nbody_opt
+
+clang -march=native -g3 -Ofast -fopenmp nbody_opt.c -o nbody_opt -lm
+./nbody_opt > ../results/opt_clang_Ofast_free.txt
+rm -Rf *~ nbody_opt
